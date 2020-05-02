@@ -66,11 +66,11 @@ export default class ManagerWidget extends Component {
                     });
                 this.setState({availableEmployees: emails})
             }).then(
-            this.props.dashboardApi.fetchHub("rest/projects").then(projectsPage => {
-                let projects = projectsPage.projects.filter(project => project.name !== "Global").map(project => {
-                    return {label: project.name, key: project.id}
+            this.props.dashboardApi.fetch(serviceId,"rest/project/all").then(returnedProjects => {
+                let projects = returnedProjects.filter(project => project.name !== "Global").map(project => {
+                    return {label: project.name, key: project.shortName}
                 });
-                this.setState({projects: projects})
+                this.setState({projects})
             }));
 
     }
@@ -83,7 +83,7 @@ export default class ManagerWidget extends Component {
 
     check = () => {
         //TODO:loading alert
-        getReportData(this.props.dashboardApi, this.state.chosenEmployees)
+        getReportData(this.props.dashboardApi, this.state)
             .then(reportData => {
                     this.setState({
                         reportData,
@@ -116,7 +116,7 @@ export default class ManagerWidget extends Component {
             let toDate = new Date(to);
             this.setState({from: null, to: null});
             this.addPeriod({
-                label: `${fromDate.toLocaleDateString()}-${toDate.toLocaleDateString()}`,
+                label: `${fromDate.toLocaleDateString()} - ${toDate.toLocaleDateString()}`,
                 getPeriod: () => getFromToDateObj(fromDate, toDate)
             })
         }
@@ -358,7 +358,6 @@ export default class ManagerWidget extends Component {
                         <Panel>
                             <Button disabled={!this.canCreate()} onClick={this.check}>Создать отчет</Button>
                         </Panel>
-
                     </div>
                     :
                     <div>

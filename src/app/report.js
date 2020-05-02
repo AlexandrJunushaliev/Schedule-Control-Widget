@@ -14,9 +14,9 @@ export default class SelfControlWidget extends Component {
     const reportData = this.props.reportData;
     return (
       <div>
-        {reportData.map(reportLine => {
-            console.log(reportLine);
-        })}
+        {
+          console.log(reportData)
+        }
         <span>репорт получай</span>
       </div>
     );
