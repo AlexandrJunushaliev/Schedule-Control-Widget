@@ -63,6 +63,11 @@ export default class ManagerWidget extends Component {
 
     }
 
+    canCreate = () => {
+        const {chosenEmployees, selectedPeriods} = this.state;
+        return chosenEmployees.length !== 0 && selectedPeriods.length !== 0
+    };
+
 
     check = () => {
         //TODO:loading alert
@@ -197,7 +202,8 @@ export default class ManagerWidget extends Component {
                                                 : <ButtonGroup>
                                                     {
                                                         selectedProjects.map(project =>
-                                                            <Button onClick={() => this.deleteProject(project)}>
+                                                            <Button key={project.key}
+                                                                    onClick={() => this.deleteProject(project)}>
                                                                 {project.label + " "}<Icon
                                                                 glyph={trashIcon}
                                                                 className="ring-icon"
@@ -231,11 +237,12 @@ export default class ManagerWidget extends Component {
                                 <br/>
                                 <div>
                                     {
-                                        selectedPeriods == false ? "Выберите периоды"
+                                        selectedPeriods == false ? <Text style={{color:"red"}}>{"Выберите период"}</Text>
                                             : <ButtonGroup>
                                                 {
                                                     selectedPeriods.map(period =>
-                                                        <Button onClick={() => this.deletePeriod(period)}>
+                                                        <Button key={period.label}
+                                                                onClick={() => this.deletePeriod(period)}>
                                                             {period.label + " "}<Icon
                                                             glyph={trashIcon}
                                                             className="ring-icon"
@@ -265,13 +272,15 @@ export default class ManagerWidget extends Component {
 
                                 </div>
                                 <div>
+                                    <br/>
                                     {
                                         chosenEmployees == false
-                                            ? <Text>{"Сотрудники не выбраны"}</Text>
+                                            ? <Text style={{color:"red"}}>{"Сотрудники не выбраны"}</Text>
                                             : <ButtonGroup>
                                                 {
                                                     chosenEmployees.map(employee =>
-                                                        <Button onClick={() => this.unChoseEmployee(employee.label)}>
+                                                        <Button key={employee.label}
+                                                                onClick={() => this.unChoseEmployee(employee.label)}>
                                                             {employee.label + " "}<Icon
                                                             glyph={trashIcon}
                                                             className="ring-icon"
@@ -284,17 +293,11 @@ export default class ManagerWidget extends Component {
                                     }
                                 </div>
                             </Content>
+                            <Panel>
+                                <Button disabled={!this.canCreate()} onClick={this.check}>Создать отчет</Button>
+                            </Panel>
                         </Island>
-                        <br/>
 
-                        <br/>
-                        <Island>
-                            <Header border>{"Выбор сотрудников"}</Header>
-
-                        </Island>
-                        <Panel>
-                            <Button onClick={this.check}>Создать отчет</Button>
-                        </Panel>
                     </div>
                     :
                     <div>
