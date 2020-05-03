@@ -1,14 +1,12 @@
 import {getUtc} from "./date-helper";
 
 export const getReportData = async (dashboardApi, widgetState) => {
-    console.log(widgetState);
     const {serviceId, chosenEmployees, issueFilter, workTypes, selectedWorkTypes, projects, selectedProjects, selectedPeriods} = widgetState;
     let workItems = [];
     let promises = [];
     const filterWorkTypes = selectedWorkTypes.length === 0 ? workTypes : selectedWorkTypes;
     const projectsToRequest = selectedProjects.length === 0 ? projects : selectedProjects;
     let fromToPeriods = selectedPeriods.map(period => period.getPeriod());
-    console.log(fromToPeriods);
     for (const project of projectsToRequest) {
         await dashboardApi.fetch(serviceId, `rest/issue/byproject/${project.key}?${issueFilter ? `filter=${issueFilter}` : ""}&with=id&max=30000`).then(issues => {
             issues.forEach(issue =>
@@ -18,7 +16,8 @@ export const getReportData = async (dashboardApi, widgetState) => {
                             return !workItem.worktype && filterWorkTypes === workTypes ||
                                 filterWorkTypes.filter(fwt => fwt.label === workItem.worktype?.name)[0];
                         }).map(workItem => {
-                            const date = new Date(workItem.date);
+                            const date = getUtc(new Date(workItem.date));
+                            const inPeriods = fromToPeriods.filter(period => period.from <= date && period.to >= date);
                             const author = chosenEmployees.filter(emp => emp.key.userLogin === workItem.author.login)[0];
                             if (!author) {
                                 return;
@@ -27,9 +26,11 @@ export const getReportData = async (dashboardApi, widgetState) => {
                                 email: chosenEmployees.filter(emp => {
                                     return emp.key.userLogin === workItem.author.login
                                 })[0].label,
-                                date: getUtc(date)
+                                date: date,
+                                inPeriods: inPeriods
                             }
-                        }));
+                        })
+                            .filter(workItem => workItem && workItem.inPeriods.length !== 0));
                     })));
         });
     }
