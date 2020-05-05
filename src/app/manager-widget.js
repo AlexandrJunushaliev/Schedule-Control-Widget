@@ -173,6 +173,7 @@ export default class ManagerWidget extends Component {
     };
 
     dataSource = props => {
+        //TODO: save query
         const {serviceId} = this.state;
         const params = {
             query: {
@@ -362,6 +363,7 @@ export default class ManagerWidget extends Component {
                     :
                     <div>
                         <Button onClick={this.closeReport}>Закрыть отчет</Button>
+
                         <Report reportData={reportData}/>
                     </div>}
             </div>

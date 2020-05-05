@@ -1,4 +1,5 @@
 import {getUtc} from "./date-helper";
+import {get1cData} from "./back-end-mock";
 
 export const getReportData = async (dashboardApi, widgetState) => {
     const {serviceId, chosenEmployees, issueFilter, workTypes, selectedWorkTypes, projects, selectedProjects, selectedPeriods} = widgetState;
@@ -27,16 +28,25 @@ export const getReportData = async (dashboardApi, widgetState) => {
                                     return emp.key.userLogin === workItem.author.login
                                 })[0].label,
                                 date: date,
-                                inPeriods: inPeriods
+                                inPeriods: inPeriods,
+                                duration: workItem.duration / 60
                             }
                         })
                             .filter(workItem => workItem && workItem.inPeriods.length !== 0));
                     })));
         });
     }
-    ;
-
     await Promise.all(promises);
-    return workItems;
+    const plan = get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods);
+    console.log(plan);
+    workItems.forEach(workItem => {
+        //console.log(workItem);
+        const user = plan.users.filter(user => user.email === workItem.email)[0];
+        const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toLocaleDateString() === period.from && WIPeriod.to.toLocaleDateString() === period.to)[0]);
+        periods.forEach(period => {
+            period.hasOwnProperty("fact") ? period.fact += workItem.duration : period.fact = workItem.duration
+        });
+    });
+    return plan.users;
     //TODO:Call to backend!
 };

@@ -1,34 +1,19 @@
-export const get1cData = () => {
-  return {
-    users:
-      [
-        {
-          email: "first",
-          periods:
-            [
-              {
-                from: "01.05",
-                to: "02.05",
-                plan: "2h"
-              },
-              {
-                from: "03.05",
-                to: "04.05",
-                plan: "1h"
-              }
-            ]
-        },
-        {
-          email: "second",
-          periods:
-            [
-              {
-                from: "04.05",
-                to: "02.05",
-                plan: "4h"
-              }
-            ]
-        }
-      ]
-  }
+function randomInteger(min, max) {
+    let rand = min - 0.5 + Math.random() * (max - min + 1);
+    return Math.round(rand);
 }
+
+export const get1cData = (emails, periods) => {
+    const res = emails.map(email => {
+        const newPeriods = periods.map(period => {
+                return {
+                    from: period.from.toLocaleDateString(),
+                    to: period.to.toLocaleDateString(),
+                    plan: randomInteger(1, 10)
+                }
+            }
+        );
+        return {email: email, periods: newPeriods}
+    });
+    return {users: res};
+};
