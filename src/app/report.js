@@ -41,6 +41,7 @@ export default class Report extends Component {
                                         <TableCell>{"Факт"}</TableCell><TableCell>{"План"}</TableCell>
                                     </TableRow>
                                     <TableRow>
+                                        //TODO: цвета просрочки и наны
                                         <TableCell>{Math.round(period.fact)}</TableCell>
                                         <TableCell>{period.plan}</TableCell>
                                     </TableRow>
