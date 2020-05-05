@@ -9,7 +9,7 @@ export const getReportData = async (dashboardApi, widgetState) => {
     const projectsToRequest = selectedProjects.length === 0 ? projects : selectedProjects;
     let fromToPeriods = selectedPeriods.map(period => period.getPeriod());
     for (const project of projectsToRequest) {
-        await dashboardApi.fetch(serviceId, `rest/issue/byproject/${project.key}?${issueFilter ? `filter=${issueFilter}` : ""}&with=id&max=30000`).then(issues => {
+        await dashboardApi.fetch(serviceId, `rest/issue/byproject/${project.key}?${issueFilter ? `filter=${encodeURIComponent(issueFilter)}` : ""}&with=id&max=30000`).then(issues => {
             issues.forEach(issue =>
                 promises = promises.concat(dashboardApi.fetch(serviceId, `rest/issue/${issue.id}/timetracking/workitem`)
                     .then(returnedWorkItems => {

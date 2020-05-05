@@ -10,6 +10,7 @@ import TableContainer from "@material-ui/core/TableContainer";
 import Paper from "@material-ui/core/Paper";
 import TableBody from "@material-ui/core/TableBody";
 import makeStyles from "@material-ui/core/styles/makeStyles";
+import Text from "@jetbrains/ring-ui/components/text/text";
 
 
 export default class Report extends Component {
@@ -41,9 +42,9 @@ export default class Report extends Component {
                                         <TableCell>{"Факт"}</TableCell><TableCell>{"План"}</TableCell>
                                     </TableRow>
                                     <TableRow>
-                                        //TODO: цвета просрочки и наны
-                                        <TableCell>{Math.round(period.fact)}</TableCell>
-                                        <TableCell>{period.plan}</TableCell>
+                                        <TableCell><Text
+                                            style={{color: period.fact < period.plan ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
+                                        <TableCell>{period.plan ?? 0}</TableCell>
                                     </TableRow>
                                 </TableCell>)}
                         </TableRow>

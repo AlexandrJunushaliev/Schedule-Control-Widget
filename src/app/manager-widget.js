@@ -1,11 +1,9 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Button, ButtonGroup, Checkbox, DatePicker, Grid, Group, Panel, Text} from "@jetbrains/ring-ui";
+import {Button, ButtonGroup, DatePicker, Group, Panel, Text} from "@jetbrains/ring-ui";
 import Select from '@jetbrains/ring-ui/components/select/select';
 import Report from "./report";
 import Island, {Header, Content} from "@jetbrains/ring-ui/components/island/island";
-import Row from "@jetbrains/ring-ui/components/grid/row";
-import Col from "@jetbrains/ring-ui/components/grid/col";
 import trashIcon from '@jetbrains/icons/trash.svg';
 import Icon from "@jetbrains/ring-ui/components/icon";
 import {getReportData} from "./api-interaction";
@@ -18,6 +16,7 @@ export default class ManagerWidget extends Component {
         registerWidgetApi: PropTypes.func
     };
 
+    //TODO:test
     constructor(props) {
         super(props);
         this.state = {
@@ -66,7 +65,7 @@ export default class ManagerWidget extends Component {
                     });
                 this.setState({availableEmployees: emails})
             }).then(
-            this.props.dashboardApi.fetch(serviceId,"rest/project/all").then(returnedProjects => {
+            this.props.dashboardApi.fetch(serviceId, "rest/project/all").then(returnedProjects => {
                 let projects = returnedProjects.filter(project => project.name !== "Global").map(project => {
                     return {label: project.name, key: project.shortName}
                 });
@@ -157,14 +156,11 @@ export default class ManagerWidget extends Component {
     addEmployee = (employee) => {
         const {chosenEmployees} = this.state;
         if (!employee) {
-            //TODO:error component
             return;
         }
         if (!chosenEmployees.filter(chosenEmployee => chosenEmployee.label === employee.label)[0]) {
             chosenEmployees.push(employee);
             this.setState(chosenEmployees);
-        } else {
-            //TODO:error component
         }
     };
     unChoseEmployee = (label) => {
@@ -173,7 +169,6 @@ export default class ManagerWidget extends Component {
     };
 
     dataSource = props => {
-        //TODO: save query
         const {serviceId} = this.state;
         const params = {
             query: {
@@ -181,8 +176,6 @@ export default class ManagerWidget extends Component {
                 fields: `query,caret,styleRanges(length,start,style,title),suggestions(auxiliaryIcon,caret,className,completionEnd,completionStart,description,group,icon,matchingEnd,matchingStart,option,prefix,suffix)`
             }
         };
-        this.setState({issueFilter: encodeURIComponent(params.query.query)});
-        console.log(this.state.issueFilter);
         return this.props.dashboardApi.fetch(`${serviceId}`, `api/search/assist?$top=-1&fields=${params.query.fields}`, {
             method: "POST",
             body: {
@@ -193,12 +186,12 @@ export default class ManagerWidget extends Component {
         });
     };
     accept = issueFilter => {
-        this.setState({issueFilter: encodeURIComponent(issueFilter.query)});
+        this.setState({issueFilter: issueFilter.query});
         console.log(this.state.issueFilter);
     };
 
     render() {
-        const {isReportReady, chosenEmployees, selectedEmployee, availableEmployees, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes} = this.state;
+        const {issueFilter, isReportReady, chosenEmployees, selectedEmployee, availableEmployees, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes} = this.state;
         return (
             <div>
                 {!isReportReady
@@ -212,6 +205,7 @@ export default class ManagerWidget extends Component {
                                 clear
                                 onApply={this.accept}
                                 focus
+                                query={issueFilter}
                                 dataSource={this.dataSource}
                             />
                         </Content>
