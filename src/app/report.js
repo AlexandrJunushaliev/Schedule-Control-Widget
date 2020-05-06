@@ -61,24 +61,24 @@ export default class Report extends Component {
             <Table size="small" aria-label="simple table">
                 <TableHead>
                     <TableRow>
-                        <TableCell>{"Email"}</TableCell>
+                        <TableCell>{"Full Name"}</TableCell>
                         {reportData[0].periods.map(period => <TableCell
                             key={`${period.label}`}>{`${period.label}`}</TableCell>)}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {reportData.map(user => {
-                        return <TableRow key={user.email}>
-                            <TableCell>{user.email}</TableCell>
+                        return <TableRow key={user.fullName}>
+                            <TableCell>{user.fullName}</TableCell>
                             {user.periods.map(period =>
                                 <TableCell key={`${period.label}`}>
                                     <TableRow>
-                                        <TableCell>{"Факт"}</TableCell><TableCell>{"План"}</TableCell>
+                                        <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
                                     </TableRow>
                                     <TableRow>
+                                        <TableCell>{period.plan ?? 0}</TableCell>
                                         <TableCell><Text
                                             style={{color: period.fact < period.plan || !period.fact ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
-                                        <TableCell>{period.plan ?? 0}</TableCell>
                                     </TableRow>
                                 </TableCell>)}
                         </TableRow>

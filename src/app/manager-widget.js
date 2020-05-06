@@ -58,12 +58,12 @@ export default class ManagerWidget extends Component {
             })
         }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
 
-        props.dashboardApi.fetchHub("rest/users")
-            .then(usersPage => {
-                let emails = usersPage.users
-                    .filter(user => user.profile.hasOwnProperty('email'))
+        props.dashboardApi.fetch(serviceId, "api/users?fields=login,email,fullName")
+            .then(users => {
+                let emails = users
+                    .filter(user => user.hasOwnProperty('email') && user.email)
                     .map(user => {
-                        return {userEmail: user.profile.email.email, userLogin: user.login}
+                        return {userEmail: user.email, userLogin: user.login, fullName: user.fullName}
                     }).map(user => {
                         return {label: user.userEmail, key: user}
                     });

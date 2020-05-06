@@ -54,13 +54,10 @@ export default class SelfControlWidget extends Component {
                 })
             })
         }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
-        this.props.dashboardApi.fetchHub("rest/users/me")
+
+        this.props.dashboardApi.fetch(serviceId, "api/users/me?fields=login,email,fullName")
             .then(user => {
-                const emp = {
-                    label: user.profile.email.email,
-                    key: {userEmail: user.profile.email.email, userLogin: user.login}
-                };
-                this.setState({chosenEmployees: [emp]})
+                this.setState({chosenEmployees: [{label: user.email, key: {userEmail: user.email, userLogin: user.login, fullName: user.fullName}}]})
             }).then(
             this.props.dashboardApi.fetch(serviceId, "rest/project/all").then(returnedProjects => {
                 let projects = returnedProjects.filter(project => project.name !== "Global").map(project => {

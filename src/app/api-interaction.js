@@ -25,10 +25,12 @@ export const getReportData = async (dashboardApi, widgetState) => {
                             if (!author) {
                                 return;
                             }
+                            const emp = chosenEmployees.filter(emp => {
+                                return emp.key.userLogin === workItem.author.login
+                            })[0];
                             return {
-                                email: chosenEmployees.filter(emp => {
-                                    return emp.key.userLogin === workItem.author.login
-                                })[0].label,
+                                email: emp.label,
+                                fullName: emp.key.fullName,
                                 date: date,
                                 inPeriods: inPeriods,
                                 duration: workItem.duration / 60
@@ -44,8 +46,12 @@ export const getReportData = async (dashboardApi, widgetState) => {
         const user = plan.users.filter(user => user.email === workItem.email)[0];
         const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toISOString() === period.from && WIPeriod.to.toISOString() === period.to)[0]);
         periods.forEach(period => {
-            period.hasOwnProperty("fact") ? period.fact += workItem.duration : period.fact = workItem.duration
+            period.hasOwnProperty("fact") ? period.fact += workItem.duration : period.fact = workItem.duration;
+
         });
+    });
+    plan.users.forEach(user => {
+        user.fullName = chosenEmployees.filter(emp => emp.label === user.email)[0].key.fullName;
     });
     return plan.users;
     //TODO:Call to backend!
