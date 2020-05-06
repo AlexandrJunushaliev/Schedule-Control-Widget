@@ -305,7 +305,9 @@ export default class SelfControlWidget extends Component {
                     <div>
                         <Button onClick={this.closeReport}>Закрыть отчет</Button>
 
-                        <Report reportData={reportData}/>
+                        <Report reportData={reportData} registerWidgetApi={this.props.registerWidgetApi}
+                                dashboardApi={this.props.dashboardApi}
+                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}/>
                     </div>}
             </div>
         );

@@ -9,7 +9,7 @@ import Alert, {Container} from "@jetbrains/ring-ui/components/alert/alert";
 
 const jetbrainsReadUserPermissionKey = "jetbrains.jetpass.user-read";
 
-class Widget extends Component {
+export default class Widget extends Component {
     static propTypes = {
         dashboardApi: PropTypes.object,
         registerWidgetApi: PropTypes.func

@@ -11,19 +11,52 @@ import Paper from "@material-ui/core/Paper";
 import TableBody from "@material-ui/core/TableBody";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Text from "@jetbrains/ring-ui/components/text/text";
+import {getRegisterWidgetApiMock} from "@jetbrains/hub-widget-ui/src/test-mocks/test-mocks";
+import {default as ReactDOM, render} from "react-dom";
+import Widget from "./app";
 
 
 export default class Report extends Component {
     static propTypes = {
-        reportData: PropTypes.array
+        registerWidgetApi: PropTypes.func,
+        reportData: PropTypes.array,
+        dashboardApi: PropTypes.object,
+        refreshReport: PropTypes.func
     };
+
 
     constructor(props) {
         super(props);
+        this.state = {isRefreshing: false, reportData: this.props.reportData};
+        this.props.registerWidgetApi({
+            onRefresh: () => {
+                this.setState({isRefreshing: true});
+                this.props.refreshReport().then(reportData => {
+                    this.setState({reportData});
+                    this.setState({isRefreshing: false})
+                }).catch(err => this.setState({isRefreshing: false}))
+            }
+        })
+    }
+
+    componentWillUnmount() {
+        const props = this.props;
+        props.registerWidgetApi({
+            onRefresh: () => {
+                ReactDOM.unmountComponentAtNode(document.getElementById('app-container'));
+                render(
+                    <Widget
+                        dashboardApi={props.dashboardApi}
+                        registerWidgetApi={props.registerWidgetApi}
+                    />,
+                    document.getElementById('app-container')
+                );
+            }
+        })
     }
 
     render() {
-        const reportData = this.props.reportData;
+        const reportData = this.state.reportData;
         return (<TableContainer component={Paper}>
             <Table size="small" aria-label="simple table">
                 <TableHead>
@@ -54,7 +87,5 @@ export default class Report extends Component {
                 </TableBody>
             </Table>
         </TableContainer>)
-        //SimpleTable();
-
     }
 }

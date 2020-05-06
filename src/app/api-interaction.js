@@ -38,9 +38,7 @@ export const getReportData = async (dashboardApi, widgetState) => {
     }
     await Promise.all(promises);
     const plan = get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods);
-    console.log(plan);
     workItems.forEach(workItem => {
-        //console.log(workItem);
         const user = plan.users.filter(user => user.email === workItem.email)[0];
         const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toLocaleDateString() === period.from && WIPeriod.to.toLocaleDateString() === period.to)[0]);
         periods.forEach(period => {
