@@ -14,6 +14,7 @@ import Text from "@jetbrains/ring-ui/components/text/text";
 import {getRegisterWidgetApiMock} from "@jetbrains/hub-widget-ui/src/test-mocks/test-mocks";
 import {default as ReactDOM, render} from "react-dom";
 import Widget from "./app";
+import {getUtc} from "./date-helper";
 
 
 export default class Report extends Component {
@@ -21,18 +22,23 @@ export default class Report extends Component {
         registerWidgetApi: PropTypes.func,
         reportData: PropTypes.array,
         dashboardApi: PropTypes.object,
-        refreshReport: PropTypes.func
+        refreshReport: PropTypes.func,
+        calculatedTime: PropTypes.number
     };
 
 
     constructor(props) {
         super(props);
-        this.state = {isRefreshing: false, reportData: this.props.reportData};
+        this.state = {
+            isRefreshing: false,
+            reportData: this.props.reportData,
+            calculatedTime: this.props.calculatedTime
+        };
         this.props.registerWidgetApi({
             onRefresh: () => {
                 this.setState({isRefreshing: true});
                 this.props.refreshReport().then(reportData => {
-                    this.setState({reportData});
+                    this.setState({reportData, calculatedTime: Date.now()});
                     this.setState({isRefreshing: false})
                 }).catch(err => this.setState({isRefreshing: false}))
             }
@@ -71,48 +77,52 @@ export default class Report extends Component {
     };
 
     render() {
-        const reportData = this.state.reportData;
+        const {reportData, calculatedTime} = this.state;
         const resultFactPlans = reportData[0].periods.map(period => this.getSumByPeriod(period));
-        return (<TableContainer component={Paper}>
-            <Table size="small" aria-label="simple table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>{"Full Name"}</TableCell>
-                        {reportData[0].periods.map(period => <TableCell
-                            key={`${period.label}`}>{`${period.label}`}</TableCell>)}
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {reportData.map(user => {
-                        return <TableRow key={user.fullName}>
-                            <TableCell>{user.fullName}</TableCell>
-                            {user.periods.map(period =>
-                                <TableCell key={`${period.label}`}>
+        return (
+            <div>
+                <Text info>{`Report was calculated in ${new Date(calculatedTime).toLocaleString()}`}</Text>
+                <TableContainer component={Paper}>
+                    <Table size="small" aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>{"Full Name"}</TableCell>
+                                {reportData[0].periods.map(period => <TableCell
+                                    key={`${period.label}`}>{`${period.label}`}</TableCell>)}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {reportData.map(user => {
+                                return <TableRow key={user.fullName}>
+                                    <TableCell>{user.fullName}</TableCell>
+                                    {user.periods.map(period =>
+                                        <TableCell key={`${period.label}`}>
+                                            <TableRow>
+                                                <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell>{period.plan ?? 0}</TableCell>
+                                                <TableCell><Text
+                                                    style={{color: period.fact < period.plan || !period.fact ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
+                                            </TableRow>
+                                        </TableCell>)}
+                                </TableRow>
+                            })}
+                            <TableRow><TableCell>{"Итого:"}</TableCell>{resultFactPlans.map(period => {
+                                return <TableCell>
                                     <TableRow>
                                         <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell>{period.plan ?? 0}</TableCell>
+                                        <TableCell>{period.sumPlan ?? 0}</TableCell>
                                         <TableCell><Text
-                                            style={{color: period.fact < period.plan || !period.fact ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
+                                            style={{color: period.sumFact < period.sumPlan || !period.sumFact ? "red" : "green"}}>{period.sumFact ? Math.round(period.sumFact) : 0}</Text></TableCell>
                                     </TableRow>
-                                </TableCell>)}
-                        </TableRow>
-                    })}
-                    <TableRow><TableCell>{"Итого:"}</TableCell>{resultFactPlans.map(period => {
-                        return <TableCell>
-                            <TableRow>
-                                <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>{period.sumPlan ?? 0}</TableCell>
-                                <TableCell><Text
-                                    style={{color: period.sumFact < period.sumPlan || !period.sumFact ? "red" : "green"}}>{period.sumFact ? Math.round(period.sumFact) : 0}</Text></TableCell>
-                            </TableRow>
-                        </TableCell>
-                    })}</TableRow>
-                </TableBody>
-            </Table>
-        </TableContainer>)
+                                </TableCell>
+                            })}</TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>)
     }
 }

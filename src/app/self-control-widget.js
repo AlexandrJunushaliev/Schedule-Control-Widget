@@ -10,6 +10,7 @@ import {getReportData} from "./api-interaction";
 import {getFromToDateObj, periodsData} from "./date-helper";
 import QueryAssist from "@jetbrains/ring-ui/components/query-assist/query-assist";
 import Alert from "@jetbrains/ring-ui/components/alert/alert";
+import {Input} from "@jetbrains/ring-ui/components/input/input";
 
 export default class SelfControlWidget extends Component {
     //TODO:test
@@ -57,7 +58,12 @@ export default class SelfControlWidget extends Component {
 
         this.props.dashboardApi.fetch(serviceId, "api/users/me?fields=login,email,fullName")
             .then(user => {
-                this.setState({chosenEmployees: [{label: user.email, key: {userEmail: user.email, userLogin: user.login, fullName: user.fullName}}]})
+                this.setState({
+                    chosenEmployees: [{
+                        label: user.email,
+                        key: {userEmail: user.email, userLogin: user.login, fullName: user.fullName}
+                    }]
+                })
             }).then(
             this.props.dashboardApi.fetch(serviceId, "rest/project/all").then(returnedProjects => {
                 let projects = returnedProjects.filter(project => project.name !== "Global").map(project => {
@@ -171,15 +177,25 @@ export default class SelfControlWidget extends Component {
         this.setState({issueFilter: issueFilter.query});
         console.log(this.state.issueFilter);
     };
+    changeTitle = e => this.setState({
+        title: e.target.value
+    });
+    DEFAULT_TITLE = "Schedule Control Report";
 
     render() {
-        const {isReportReady, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes, issueFilter} = this.state;
+        const {title, isReportReady, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes, issueFilter} = this.state;
+        this.props.dashboardApi.setTitle(title ?? this.DEFAULT_TITLE);
         return (
             <div>
                 {!isReportReady
                     ?
                     <div>
                         <Content>
+                            <strong>{"Название репорта:"}</strong>
+                            <Input
+                                onChange={this.changeTitle}
+                                value={title ?? this.DEFAULT_TITLE}
+                            />
                             <strong>{"Issue Filter:"}</strong>
                             <QueryAssist
                                 query={issueFilter}
@@ -304,7 +320,8 @@ export default class SelfControlWidget extends Component {
 
                         <Report reportData={reportData} registerWidgetApi={this.props.registerWidgetApi}
                                 dashboardApi={this.props.dashboardApi}
-                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}/>
+                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}
+                                calculatedTime={Date.now()}/>
                     </div>}
             </div>
         );

@@ -10,6 +10,7 @@ import {getReportData} from "./api-interaction";
 import {getFromToDateObj, periodsData} from "./date-helper";
 import QueryAssist from "@jetbrains/ring-ui/components/query-assist/query-assist";
 import Alert from "@jetbrains/ring-ui/components/alert/alert";
+import {Input} from "@jetbrains/ring-ui/components/input/input";
 
 export default class ManagerWidget extends Component {
     static propTypes = {
@@ -196,15 +197,25 @@ export default class ManagerWidget extends Component {
     accept = issueFilter => {
         this.setState({issueFilter: issueFilter.query});
     };
+    changeTitle = e => this.setState({
+        title: e.target.value
+    });
+    DEFAULT_TITLE = "Schedule Control Report";
 
     render() {
-        const {issueFilter, isReportReady, chosenEmployees, selectedEmployee, availableEmployees, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes} = this.state;
+        const {title, issueFilter, isReportReady, chosenEmployees, selectedEmployee, availableEmployees, reportData, projects, selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes} = this.state;
+        this.props.dashboardApi.setTitle(title ?? this.DEFAULT_TITLE);
         return (
             <div>
                 {!isReportReady
                     ?
                     <div>
                         <Content>
+                            <strong>{"Название репорта:"}</strong>
+                            <Input
+                                onChange={this.changeTitle}
+                                value={title ?? this.DEFAULT_TITLE}
+                            />
                             <strong>{"Issue Filter:"}</strong>
                             <QueryAssist
                                 placeholder="Введите фильтр и нажмите Enter"
@@ -366,7 +377,8 @@ export default class ManagerWidget extends Component {
                         <Button onClick={this.closeReport}>Закрыть отчет</Button>
                         <Report reportData={reportData} registerWidgetApi={this.props.registerWidgetApi}
                                 dashboardApi={this.props.dashboardApi}
-                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}/>
+                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}
+                                calculatedTime={Date.now()}/>
                     </div>}
             </div>
         );
