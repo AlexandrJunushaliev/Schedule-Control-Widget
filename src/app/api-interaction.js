@@ -7,7 +7,9 @@ export const getReportData = async (dashboardApi, widgetState) => {
     let promises = [];
     const filterWorkTypes = selectedWorkTypes.length === 0 ? workTypes : selectedWorkTypes;
     const projectsToRequest = selectedProjects.length === 0 ? projects : selectedProjects;
-    let fromToPeriods = selectedPeriods.map(period => period.getPeriod());
+    let fromToPeriods = selectedPeriods.map(period => {
+        return {label: period.label, from: period.getPeriod().from, to: period.getPeriod().to}
+    });
     for (const project of projectsToRequest) {
         await dashboardApi.fetch(serviceId, `rest/issue/byproject/${project.key}?${issueFilter ? `filter=${encodeURIComponent(issueFilter)}` : ""}&with=id&max=30000`).then(issues => {
             issues.forEach(issue =>
@@ -40,7 +42,7 @@ export const getReportData = async (dashboardApi, widgetState) => {
     const plan = get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods);
     workItems.forEach(workItem => {
         const user = plan.users.filter(user => user.email === workItem.email)[0];
-        const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toLocaleDateString() === period.from && WIPeriod.to.toLocaleDateString() === period.to)[0]);
+        const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toISOString() === period.from && WIPeriod.to.toISOString() === period.to)[0]);
         periods.forEach(period => {
             period.hasOwnProperty("fact") ? period.fact += workItem.duration : period.fact = workItem.duration
         });

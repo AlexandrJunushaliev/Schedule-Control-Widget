@@ -63,7 +63,7 @@ export default class Report extends Component {
                     <TableRow>
                         <TableCell>{"Email"}</TableCell>
                         {reportData[0].periods.map(period => <TableCell
-                            key={`${period.from} - ${period.to}`}>{`${period.from} - ${period.to}`}</TableCell>)}
+                            key={`${period.label}`}>{`${period.label}`}</TableCell>)}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -71,7 +71,7 @@ export default class Report extends Component {
                         return <TableRow key={user.email}>
                             <TableCell>{user.email}</TableCell>
                             {user.periods.map(period =>
-                                <TableCell key={`${period.from} - ${period.to}`}>
+                                <TableCell key={`${period.label}`}>
                                     <TableRow>
                                         <TableCell>{"Факт"}</TableCell><TableCell>{"План"}</TableCell>
                                     </TableRow>
