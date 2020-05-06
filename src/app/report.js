@@ -55,8 +55,24 @@ export default class Report extends Component {
         })
     }
 
+    getSumByPeriod = (period) => {
+        const {reportData} = this.state;
+        let sumPlan = 0;
+        let sumFact = 0;
+        reportData.map(user => user.periods).reduce(function (a, b) {
+            return a.concat(b);
+        }).filter(repPeriod => {
+            return repPeriod.label === period.label
+        }).forEach(period => {
+            sumFact += period.fact ?? 0;
+            sumPlan += period.plan
+        });
+        return {sumFact, sumPlan}
+    };
+
     render() {
         const reportData = this.state.reportData;
+        const resultFactPlans = reportData[0].periods.map(period => this.getSumByPeriod(period));
         return (<TableContainer component={Paper}>
             <Table size="small" aria-label="simple table">
                 <TableHead>
@@ -83,7 +99,18 @@ export default class Report extends Component {
                                 </TableCell>)}
                         </TableRow>
                     })}
-
+                    <TableRow><TableCell>{"Итого:"}</TableCell>{resultFactPlans.map(period => {
+                        return <TableCell>
+                            <TableRow>
+                                <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>{period.sumPlan ?? 0}</TableCell>
+                                <TableCell><Text
+                                    style={{color: period.sumFact < period.sumPlan || !period.sumFact ? "red" : "green"}}>{period.sumFact ? Math.round(period.sumFact) : 0}</Text></TableCell>
+                            </TableRow>
+                        </TableCell>
+                    })}</TableRow>
                 </TableBody>
             </Table>
         </TableContainer>)

@@ -98,7 +98,7 @@ export default class Widget extends Component {
                 </div>
             </div>
         }
-        if (!isManager) {
+        if (isManager) {
             return <div className="widget">
                 <ManagerWidget
                     dashboardApi={this.props.dashboardApi}
