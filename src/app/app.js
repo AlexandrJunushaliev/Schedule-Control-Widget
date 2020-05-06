@@ -5,6 +5,7 @@ import {default as ReactDOM, render} from 'react-dom';
 import './app.css';
 import ManagerWidget from "./manager-widget";
 import SelfControlWidget from "./self-control-widget";
+import Alert, {Container} from "@jetbrains/ring-ui/components/alert/alert";
 
 const jetbrainsReadUserPermissionKey = "jetbrains.jetpass.user-read";
 
@@ -16,7 +17,7 @@ class Widget extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isManager: false, didMount: false,alerts:[]};
+        this.state = {isManager: false, didMount: false, alerts: []};
     }
 
     async componentDidMount() {
@@ -27,7 +28,7 @@ class Widget extends Component {
             .then(user =>
                 myRoles = [...new Set([].concat(user.projectRoles, user.transitiveProjectRoles, user.sourcedProjectRoles).map(role => role.role.key))])
             .catch(err => {
-                //TODO: обработать ошибку через компонент
+                this.throwAlert(JSON.stringify(err), Alert.Type.ERROR)
             });
         await dashboardApi.fetchHub("rest/roles")
             .then(rolesPage => roles = rolesPage.roles
@@ -37,7 +38,7 @@ class Widget extends Component {
                 .filter(role => role.permissions.includes(jetbrainsReadUserPermissionKey))
                 .map(role => role.key))
             .catch(err => {
-                //TODO: обработать ошибку через компонент
+                this.throwAlert(JSON.stringify(err), Alert.Type.ERROR)
             });
         this.setState({isManager: myRoles.some(role => roles.includes(role)), didMount: true})
     }
@@ -55,6 +56,21 @@ class Widget extends Component {
             alerts: this.state.alerts
         });
     };
+    throwAlert = (message, type) => {
+        const newAlerts = this.state.alerts;
+        const alert = {
+            type: type,
+            key: `${Date.now()}`,
+            message: message
+        };
+        newAlerts.push(alert);
+        this.setState({alerts: newAlerts});
+        return alert;
+    };
+    closeAlert = (alert) => {
+        alert.isClosing = true;
+        this.setState(this.state.alerts);
+    };
 
     render() {
         const {isManager, didMount} = this.state;
@@ -62,6 +78,24 @@ class Widget extends Component {
         if (!didMount) {
             return <div className="widget">
                 <text>loading...</text>
+                <div>
+                    <Container>
+                        {this.state.alerts.map(alert => {
+                            const {message, key, type, isClosing} = alert;
+                            return (
+                                <Alert
+                                    key={key}
+                                    type={type}
+                                    isClosing={isClosing}
+                                    onCloseRequest={() => this.onCloseAlertClick(alert)}
+                                    onClose={() => this.onCloseAlert(alert)}
+                                >
+                                    {message}
+                                </Alert>
+                            );
+                        })}
+                    </Container>
+                </div>
             </div>
         }
         if (isManager) {
@@ -69,7 +103,27 @@ class Widget extends Component {
                 <ManagerWidget
                     dashboardApi={this.props.dashboardApi}
                     registerWidgetApi={this.props.registerWidgetApi}
+                    throwAlert={this.throwAlert.bind(this.state)}
+                    closeAlert={this.closeAlert.bind(this.state)}
                 />
+                <div>
+                    <Container>
+                        {this.state.alerts.map(alert => {
+                            const {message, key, type, isClosing} = alert;
+                            return (
+                                <Alert
+                                    key={key}
+                                    type={type}
+                                    isClosing={isClosing}
+                                    onCloseRequest={() => this.onCloseAlertClick(alert)}
+                                    onClose={() => this.onCloseAlert(alert)}
+                                >
+                                    {message}
+                                </Alert>
+                            );
+                        })}
+                    </Container>
+                </div>
             </div>
         }
         return (
@@ -77,7 +131,28 @@ class Widget extends Component {
                 <SelfControlWidget
                     dashboardApi={this.props.dashboardApi}
                     registerWidgetApi={this.props.registerWidgetApi}
+                    throwAlert={this.throwAlert.bind(this.state)}
+                    closeAlert={this.closeAlert.bind(this.state)}
                 />
+
+                <div>
+                    <Container>
+                        {this.state.alerts.map(alert => {
+                            const {message, key, type, isClosing} = alert;
+                            return (
+                                <Alert
+                                    key={key}
+                                    type={type}
+                                    isClosing={isClosing}
+                                    onCloseRequest={() => this.onCloseAlertClick(alert)}
+                                    onClose={() => this.onCloseAlert(alert)}
+                                >
+                                    {message}
+                                </Alert>
+                            );
+                        })}
+                    </Container>
+                </div>
             </div>
         );
     }

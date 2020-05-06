@@ -29,21 +29,22 @@ export default class Report extends Component {
                 <TableHead>
                     <TableRow>
                         <TableCell>{"Email"}</TableCell>
-                        {reportData[0].periods.map(period => <TableCell>{`${period.from} - ${period.to}`}</TableCell>)}
+                        {reportData[0].periods.map(period => <TableCell
+                            key={`${period.from} - ${period.to}`}>{`${period.from} - ${period.to}`}</TableCell>)}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {reportData.map(user => {
-                        return <TableRow>
+                        return <TableRow key={user.email}>
                             <TableCell>{user.email}</TableCell>
                             {user.periods.map(period =>
-                                <TableCell>
+                                <TableCell key={`${period.from} - ${period.to}`}>
                                     <TableRow>
                                         <TableCell>{"Факт"}</TableCell><TableCell>{"План"}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell><Text
-                                            style={{color: period.fact < period.plan ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
+                                            style={{color: period.fact < period.plan || !period.fact ? "red" : "green"}}>{period.fact ? Math.round(period.fact) : 0}</Text></TableCell>
                                         <TableCell>{period.plan ?? 0}</TableCell>
                                     </TableRow>
                                 </TableCell>)}

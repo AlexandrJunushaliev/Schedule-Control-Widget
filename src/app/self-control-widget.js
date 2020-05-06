@@ -9,12 +9,15 @@ import Icon from "@jetbrains/ring-ui/components/icon";
 import {getReportData} from "./api-interaction";
 import {getFromToDateObj, periodsData} from "./date-helper";
 import QueryAssist from "@jetbrains/ring-ui/components/query-assist/query-assist";
+import Alert from "@jetbrains/ring-ui/components/alert/alert";
 
 export default class SelfControlWidget extends Component {
     //TODO:test
     static propTypes = {
         dashboardApi: PropTypes.object,
-        registerWidgetApi: PropTypes.func
+        registerWidgetApi: PropTypes.func,
+        throwAlert: PropTypes.func,
+        closeAlert: PropTypes.func
     };
 
     constructor(props) {
@@ -39,19 +42,18 @@ export default class SelfControlWidget extends Component {
 
 
     async componentDidMount() {
-        //TODO: add catch()
         let serviceId = null;
         await this.props.dashboardApi.fetchHub("rest/services").then(servicesPage => {
             serviceId = servicesPage.services.filter(service => service.name === "YouTrack")[0].id;
             this.setState({serviceId});
-        });
+        }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
         await this.props.dashboardApi.fetch(serviceId, "rest/admin/timetracking/worktype").then(workTypePage => {
             this.setState({
                 workTypes: workTypePage.map(workType => {
                     return {label: workType.name, key: workType.name}
                 })
             })
-        });
+        }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
         this.props.dashboardApi.fetchHub("rest/users/me")
             .then(user => {
                 const emp = {
@@ -65,7 +67,7 @@ export default class SelfControlWidget extends Component {
                     return {label: project.name, key: project.shortName}
                 });
                 this.setState({projects})
-            }));
+            })).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
 
     }
 
@@ -76,15 +78,19 @@ export default class SelfControlWidget extends Component {
 
 
     check = () => {
-        //TODO:loading alert
+        const props = this.props;
+        const alert = this.props.throwAlert("Идет подготовка отчета", Alert.Type.LOADING);
         getReportData(this.props.dashboardApi, this.state)
             .then(reportData => {
+                    props.closeAlert(alert);
+                    props.throwAlert("Отчет готов", Alert.Type.SUCCESS);
                     this.setState({
                         reportData,
                         isReportReady: true
                     })
                 }
-            );
+            ).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
+
     };
     closeReport = () => this.setState({isReportReady: false});
     selectPeriod = selectedPeriod => {
