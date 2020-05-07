@@ -18,7 +18,8 @@ export default class SelfControlWidget extends Component {
         dashboardApi: PropTypes.object,
         registerWidgetApi: PropTypes.func,
         throwAlert: PropTypes.func,
-        closeAlert: PropTypes.func
+        closeAlert: PropTypes.func,
+        userId:PropTypes.string
     };
 
     constructor(props) {
@@ -83,7 +84,7 @@ export default class SelfControlWidget extends Component {
     check = () => {
         const props = this.props;
         const alert = this.props.throwAlert("Идет подготовка отчета", Alert.Type.LOADING);
-        getReportData(this.props.dashboardApi, this.state)
+        getReportData(this.props.dashboardApi, this.state,this.props.userId)
             .then(reportData => {
                     props.closeAlert(alert);
                     props.throwAlert("Отчет готов", Alert.Type.SUCCESS);

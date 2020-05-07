@@ -17,16 +17,19 @@ export default class Widget extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isManager: false, didMount: false, alerts: []};
+        this.state = {isManager: false, didMount: false, alerts: [], userId: ""};
     }
 
     async componentDidMount() {
         const {dashboardApi} = this.props;
         let myRoles = [];
         let roles = [];
+        let myUserId = "";
         await dashboardApi.fetchHub("rest/users/me")
-            .then(user =>
-                myRoles = [...new Set([].concat(user.projectRoles, user.transitiveProjectRoles, user.sourcedProjectRoles).map(role => role.role.key))])
+            .then(user => {
+                myUserId = user.id;
+                myRoles = [...new Set([].concat(user.projectRoles, user.transitiveProjectRoles, user.sourcedProjectRoles).map(role => role.role.key))]
+            })
             .catch(err => {
                 this.throwAlert(JSON.stringify(err), Alert.Type.ERROR)
             });
@@ -40,7 +43,7 @@ export default class Widget extends Component {
             .catch(err => {
                 this.throwAlert(JSON.stringify(err), Alert.Type.ERROR)
             });
-        this.setState({isManager: myRoles.some(role => roles.includes(role)), didMount: true})
+        this.setState({isManager: myRoles.some(role => roles.includes(role)), didMount: true, userId: myUserId})
     }
 
     onCloseAlert = closedAlert => {
@@ -105,6 +108,7 @@ export default class Widget extends Component {
                     registerWidgetApi={this.props.registerWidgetApi}
                     throwAlert={this.throwAlert.bind(this.state)}
                     closeAlert={this.closeAlert.bind(this.state)}
+                    userId={this.state.userId}
                 />
                 <div>
                     <Container>
@@ -133,6 +137,7 @@ export default class Widget extends Component {
                     registerWidgetApi={this.props.registerWidgetApi}
                     throwAlert={this.throwAlert.bind(this.state)}
                     closeAlert={this.closeAlert.bind(this.state)}
+                    userId={this.state.userId}
                 />
 
                 <div>

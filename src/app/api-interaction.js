@@ -1,7 +1,7 @@
 import {getUtc} from "./date-helper";
 import {get1cData} from "./back-end-mock";
 
-export const getReportData = async (dashboardApi, widgetState) => {
+export const getReportData = async (dashboardApi, widgetState, userId) => {
     const {serviceId, chosenEmployees, issueFilter, workTypes, selectedWorkTypes, projects, selectedProjects, selectedPeriods} = widgetState;
     let workItems = [];
     let promises = [];
@@ -41,7 +41,7 @@ export const getReportData = async (dashboardApi, widgetState) => {
         });
     }
     await Promise.all(promises);
-    const plan = get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods);
+    const plan = await get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods, userId);
     workItems.forEach(workItem => {
         const user = plan.users.filter(user => user.email === workItem.email)[0];
         const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toISOString() === period.from && WIPeriod.to.toISOString() === period.to)[0]);
@@ -54,5 +54,4 @@ export const getReportData = async (dashboardApi, widgetState) => {
         user.fullName = chosenEmployees.filter(emp => emp.label === user.email)[0].key.fullName;
     });
     return plan.users;
-    //TODO:Call to backend!
 };
