@@ -48,14 +48,14 @@ export default class SelfControlWidget extends Component {
         await this.props.dashboardApi.fetchHub("rest/services").then(servicesPage => {
             serviceId = servicesPage.services.filter(service => service.name === "YouTrack")[0].id;
             this.setState({serviceId});
-        }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
+        }).catch(err => this.props.throwAlert("self-control rest/services", Alert.Type.ERROR));
         await this.props.dashboardApi.fetch(serviceId, "rest/admin/timetracking/worktype").then(workTypePage => {
             this.setState({
                 workTypes: workTypePage.map(workType => {
                     return {label: workType.name, key: workType.name}
                 })
             })
-        }).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
+        }).catch(err => this.props.throwAlert("self-control rest/admin/timetracking/worktype", Alert.Type.ERROR));
 
         this.props.dashboardApi.fetch(serviceId, "api/users/me?fields=login,email,fullName")
             .then(user => {
@@ -71,7 +71,7 @@ export default class SelfControlWidget extends Component {
                     return {label: project.name, key: project.shortName}
                 });
                 this.setState({projects})
-            })).catch(err => props.throwAlert(JSON.stringify(err), Alert.Type.ERROR));
+            })).catch(err => this.props.throwAlert("self-control  api/users/me?fields=login,email,fullName rest/project/all", Alert.Type.ERROR));
 
     }
 
@@ -84,7 +84,7 @@ export default class SelfControlWidget extends Component {
     check = () => {
         const props = this.props;
         const alert = this.props.throwAlert("Идет подготовка отчета", Alert.Type.LOADING);
-        getReportData(this.props.dashboardApi, this.state,this.props.userId)
+        getReportData(this.props.dashboardApi, this.state,this.props.userId,this.props.throwAlert)
             .then(reportData => {
                     props.closeAlert(alert);
                     props.throwAlert("Отчет готов", Alert.Type.SUCCESS);
@@ -321,7 +321,7 @@ export default class SelfControlWidget extends Component {
 
                         <Report reportData={reportData} registerWidgetApi={this.props.registerWidgetApi}
                                 dashboardApi={this.props.dashboardApi}
-                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state))}
+                                refreshReport={(() => getReportData(this.props.dashboardApi, this.state,this.props.userId,this.props.throwAlert))}
                                 calculatedTime={Date.now()}/>
                     </div>}
             </div>

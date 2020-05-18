@@ -1,10 +1,5 @@
-function randomInteger(min, max) {
-    let rand = min - 0.5 + Math.random() * (max - min + 1);
-    return Math.round(rand);
-}
-
 export const get1cData = async (emails, periods, userId) => {
-    let response = await postData("https://localhost:5001/api/post", {
+    let response = await postData("https://yt-schedule-control.hightech.group/api/plan/periods", {
         emails, periods: periods.map(period => {
             return {from: period.from.toISOString(), to: period.to.toISOString()}
         }), userId

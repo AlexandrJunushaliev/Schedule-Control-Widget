@@ -1,8 +1,10 @@
 import {getUtc} from "./date-helper";
 import {get1cData} from "./back-end-mock";
+import Alert from "@jetbrains/ring-ui/components/alert/alert";
 
-export const getReportData = async (dashboardApi, widgetState, userId) => {
-    const {serviceId, chosenEmployees, issueFilter, workTypes, selectedWorkTypes, projects, selectedProjects, selectedPeriods} = widgetState;
+export const getReportData = async (dashboardApi, widgetState, userId, throwAlert) => {
+    const {serviceId, issueFilter, workTypes, selectedWorkTypes, projects, selectedProjects, selectedPeriods, isReportForMyself} = widgetState;
+    let {chosenEmployees} = widgetState;
     let workItems = [];
     let promises = [];
     const filterWorkTypes = selectedWorkTypes.length === 0 ? workTypes : selectedWorkTypes;
@@ -10,6 +12,16 @@ export const getReportData = async (dashboardApi, widgetState, userId) => {
     let fromToPeriods = selectedPeriods.map(period => {
         return {label: period.label, from: period.getPeriod().from, to: period.getPeriod().to}
     });
+    if (isReportForMyself) {
+        await dashboardApi.fetch(serviceId, "api/users/me?fields=login,email,fullName")
+            .then(user => {
+                chosenEmployees = [{
+                    label: user.email,
+                    key: {userEmail: user.email, userLogin: user.login, fullName: user.fullName}
+                }];
+            })
+    }
+
     for (const project of projectsToRequest) {
         await dashboardApi.fetch(serviceId, `rest/issue/byproject/${project.key}?${issueFilter ? `filter=${encodeURIComponent(issueFilter)}` : ""}&with=id&max=30000`).then(issues => {
             issues.forEach(issue =>
@@ -41,7 +53,8 @@ export const getReportData = async (dashboardApi, widgetState, userId) => {
         });
     }
     await Promise.all(promises);
-    const plan = await get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods, userId);
+    console.log("before", chosenEmployees.map(emp => emp.label), fromToPeriods, userId)
+    const plan = await get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods, userId).catch(err => throwAlert("в запросе", Alert.Type.ERROR));
     workItems.forEach(workItem => {
         const user = plan.users.filter(user => user.email === workItem.email)[0];
         const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toISOString() === period.from && WIPeriod.to.toISOString() === period.to)[0]);

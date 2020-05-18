@@ -13,8 +13,9 @@ import makeStyles from "@material-ui/core/styles/makeStyles";
 import Text from "@jetbrains/ring-ui/components/text/text";
 import {getRegisterWidgetApiMock} from "@jetbrains/hub-widget-ui/src/test-mocks/test-mocks";
 import {default as ReactDOM, render} from "react-dom";
-import Widget from "./app";
+import Widget, {saveConfig} from "./app";
 import {getUtc} from "./date-helper";
+
 
 
 export default class Report extends Component {
@@ -31,13 +32,13 @@ export default class Report extends Component {
         super(props);
         this.state = {
             isRefreshing: false,
-            reportData: this.props.reportData,
-            calculatedTime: this.props.calculatedTime
+            reportData: props.reportData,
+            calculatedTime: props.calculatedTime
         };
-        this.props.registerWidgetApi({
+        props.registerWidgetApi({
             onRefresh: () => {
                 this.setState({isRefreshing: true});
-                this.props.refreshReport().then(reportData => {
+                props.refreshReport().then(async reportData => {
                     this.setState({reportData, calculatedTime: Date.now()});
                     this.setState({isRefreshing: false})
                 }).catch(err => this.setState({isRefreshing: false}))
