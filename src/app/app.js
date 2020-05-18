@@ -33,7 +33,7 @@ export default class Widget extends Component {
             if (config.isManagersWidget) {
                 this.setState({isManagersWidget: true})
             }
-            console.log("before set",config)
+            console.log("before set", config)
             this.setState({isExistingWidget: true})
         }
 
@@ -45,7 +45,9 @@ export default class Widget extends Component {
         await dashboardApi.fetchHub("rest/users/me")
             .then(user => {
                 myUserId = user.id;
-                myRoles = [...new Set([].concat(user.projectRoles, user.transitiveProjectRoles, user.sourcedProjectRoles).map(role => role.role.key))]
+                myRoles = user.projectRoles && user.transitiveProjectRoles && user.sourcedProjectRoles
+                    ? [...new Set([].concat(user.projectRoles, user.transitiveProjectRoles, user.sourcedProjectRoles).map(role => role.role.key))]
+                    : null
             })
             .catch(err => {
                 this.throwAlert("При загрузке типа на запрос 'rest/users/me'", Alert.Type.ERROR)
@@ -61,7 +63,7 @@ export default class Widget extends Component {
                 this.throwAlert("При загрузке типа на запрос 'rest/roles'", Alert.Type.ERROR)
             });
         this.setState({
-            isManager: myRoles == false ? false : myRoles.some(role => roles.includes(role)),
+            isManager: myRoles ? myRoles.some(role => roles.includes(role)) : false,
             didMount: true,
             userId: myUserId
         })
@@ -99,7 +101,7 @@ export default class Widget extends Component {
     render() {
         const {isManager, didMount, isExistingWidget} = this.state;
 
-        let isManagersWidget=this.state.isManagersWidget
+        let isManagersWidget = this.state.isManagersWidget
         if (!isManagersWidget && isManager && !isExistingWidget) {
             isManagersWidget = true;
         }

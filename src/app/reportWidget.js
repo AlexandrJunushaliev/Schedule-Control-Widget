@@ -123,14 +123,14 @@ export default class ReportWidget extends Component {
                 workTypes = [...new Set(workTypes)].map(wt => {
                     return {label: wt, key: wt}
                 });
-                this.setState({projects,workTypes, didMount: true})
+                this.setState({projects, workTypes, didMount: true})
             })).catch(err => props.throwAlert("при загрузке менеджер виджета при запросе 'api/users?fields=login,email,fullName' или 'rest/project/all'", Alert.Type.ERROR));
 
     }
 
     canCreate = () => {
-        const {chosenEmployees, selectedPeriods} = this.state;
-        return chosenEmployees.length !== 0 && selectedPeriods.length !== 0
+        const {chosenEmployees, selectedPeriods, isReportForMyself} = this.state;
+        return chosenEmployees.length !== 0 && selectedPeriods.length !== 0 || selectedPeriods.length !== 0 && isReportForMyself
     };
     getSumByPeriod = (period) => {
         const {reportData} = this.state;
@@ -402,10 +402,10 @@ export default class ReportWidget extends Component {
                         </div>
                     </Content>
                     <Content>
-                        <Radio value={isReportForMyself}
-                               onChange={(value) => this.setState({isReportForMyself: value})}>
-                            <Radio.Item value={true}>forMe</Radio.Item>
-                            <Radio.Item value={false}>no</Radio.Item>
+                        <Radio value={isReportForMyself.toString()}
+                               onChange={(value) => this.setState({isReportForMyself: value === "true"})}>
+                            <Radio.Item value={"true"}>для Me</Radio.Item>
+                            <Radio.Item value={"false"}>Выбор группы сотрудников</Radio.Item>
                         </Radio>
                         {
                             !isReportForMyself
@@ -474,7 +474,7 @@ export default class ReportWidget extends Component {
         if (isConfiguring) {
             return this.renderConfiguration();
         }
-        if (reportData.length === 0 || chosenEmployees.length === 0 || selectedPeriods.length === 0) {
+        if (!isExistingWidget || reportData.length === 0) {
             return (
                 <EmptyWidget message={"Для настройки виджета откройте пункт Edit..."} face={"(⌒‿⌒)"}/>)
         }
