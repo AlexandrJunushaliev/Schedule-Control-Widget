@@ -1,5 +1,5 @@
 import {getUtc} from "./date-helper";
-import {get1cData} from "./back-end-mock";
+import {get1cData} from "./back-end-interaction";
 import Alert from "@jetbrains/ring-ui/components/alert/alert";
 
 export const getReportData = async (dashboardApi, widgetState, userId, throwAlert) => {
@@ -53,10 +53,12 @@ export const getReportData = async (dashboardApi, widgetState, userId, throwAler
         });
     }
     await Promise.all(promises);
-    console.log("before", chosenEmployees.map(emp => emp.label), fromToPeriods, userId)
     const plan = await get1cData(chosenEmployees.map(emp => emp.label), fromToPeriods, userId).catch(err => throwAlert("в запросе", Alert.Type.ERROR));
     workItems.forEach(workItem => {
         const user = plan.users.filter(user => user.email === workItem.email)[0];
+        if (!user) {
+            return;
+        }
         const periods = user.periods.filter(period => workItem.inPeriods.filter(WIPeriod => WIPeriod.from.toISOString() === period.from && WIPeriod.to.toISOString() === period.to)[0]);
         periods.forEach(period => {
             period.hasOwnProperty("fact") ? period.fact += workItem.duration : period.fact = workItem.duration;
@@ -64,7 +66,8 @@ export const getReportData = async (dashboardApi, widgetState, userId, throwAler
         });
     });
     plan.users.forEach(user => {
-        user.fullName = chosenEmployees.filter(emp => emp.label === user.email)[0].key.fullName;
+        const emp = chosenEmployees.filter(emp => emp.label === user.email)[0];
+        user.fullName = emp ? emp.key.fullName : "нет в факте";
     });
     return plan.users;
 };

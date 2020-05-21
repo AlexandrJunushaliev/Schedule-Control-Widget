@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import {default as ReactDOM, render} from 'react-dom';
 import './app.css';
 import ReportWidget from "./reportWidget";
-import SelfControlWidget from "./self-control-widget";
 import Alert, {Container} from "@jetbrains/ring-ui/components/alert/alert";
 
 const jetbrainsReadUserPermissionKey = "jetbrains.jetpass.user-read";

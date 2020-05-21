@@ -114,6 +114,10 @@ export default class ReportWidget extends Component {
                     }).map(user => {
                         return {label: user.userEmail, key: user}
                     });
+                emails.push({
+                    key: {fullName: "Бабин Константин", userEmail: "graf.rav@gmail.com", userLogin: "graf.rav"},
+                    label: "babin@hightech.group"
+                })
                 this.setState({availableEmployees: emails})
             }).then(
             props.dashboardApi.fetch(serviceId, "rest/project/all").then(async returnedProjects => {
