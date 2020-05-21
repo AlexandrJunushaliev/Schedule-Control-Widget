@@ -88,6 +88,7 @@ export default class ReportWidget extends Component {
         if (config && config.selectedPeriods && config.chosenEmployees) {
             config.selectedPeriod = config.selectedPeriod ? getPeriodsArray([config.selectedPeriod])[0] : null;
             config.selectedPeriods = getPeriodsArray(config.selectedPeriods);
+            this.props.dashboardApi.setTitle(config.title??this.DEFAULT_TITLE);
             this.setState({...config});
         }
     };
@@ -157,7 +158,6 @@ export default class ReportWidget extends Component {
         getReportData(props.dashboardApi, {...this.state}, props.userId, props.throwAlert)
             .then(async reportData => {
                     props.closeAlert(alert);
-                    props.throwAlert("Отчет готов", Alert.Type.SUCCESS);
                     await this.saveState(props.dashboardApi, {...this.state, isExistingWidget: true, isConfiguring: false});
                     this.setState({
                         isConfiguring: false,
