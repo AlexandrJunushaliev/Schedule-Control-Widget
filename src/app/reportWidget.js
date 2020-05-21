@@ -78,14 +78,15 @@ export default class ReportWidget extends Component {
 
     saveState = async (dashboardApi, state) => {
         state.selectedPeriods = state.selectedPeriods.map(period => period.label);
-        state.selectedPeriod = state.selectedPeriod.label;
+        state.selectedPeriod = state.selectedPeriod ? state.selectedPeriod.label : null;
         state.isConfiguring = false;
+        delete state.didMount;
         await dashboardApi.storeConfig(state);
     };
     readState = async (dashboardApi) => {
         const config = await dashboardApi.readConfig();
         if (config && config.selectedPeriods && config.chosenEmployees) {
-            config.selectedPeriod = getPeriodsArray([config.selectedPeriod])[0];
+            config.selectedPeriod = config.selectedPeriod ? getPeriodsArray([config.selectedPeriod])[0] : null;
             config.selectedPeriods = getPeriodsArray(config.selectedPeriods);
             this.setState({...config});
         }
@@ -94,6 +95,9 @@ export default class ReportWidget extends Component {
     async componentDidMount() {
         const props = this.props;
         await this.readState(props.dashboardApi);
+        if (this.state.isExistingWidget) {
+            this.check();
+        }
         let serviceId = null;
         await props.dashboardApi.fetchHub("rest/services").then(servicesPage => {
             serviceId = servicesPage.services.filter(service => service.name === "YouTrack")[0].id;
@@ -154,11 +158,12 @@ export default class ReportWidget extends Component {
             .then(async reportData => {
                     props.closeAlert(alert);
                     props.throwAlert("Отчет готов", Alert.Type.SUCCESS);
+                    await this.saveState(props.dashboardApi, {...this.state, isExistingWidget: true, isConfiguring: false});
                     this.setState({
                         isConfiguring: false,
                         reportData, isExistingWidget: true, calculatedTime: Date.now()
                     });
-                    await this.saveState(props.dashboardApi, {...this.state});
+
                     await this.props.dashboardApi.exitConfigMode();
                 }
             ).catch(async err => {
@@ -275,7 +280,7 @@ export default class ReportWidget extends Component {
     renderConfiguration() {
         const {
             title, issueFilter, chosenEmployees, selectedEmployee, availableEmployees, projects,
-            selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes, isReportForMyself
+            selectedProject, selectedProjects, selectedPeriod, selectedPeriods, from, to, selectedWorkType, selectedWorkTypes, workTypes, isReportForMyself, isManagersWidget
         } = this.state;
         this.props.dashboardApi.setTitle(title ?? this.DEFAULT_TITLE);
         return (
@@ -402,11 +407,14 @@ export default class ReportWidget extends Component {
                         </div>
                     </Content>
                     <Content>
-                        <Radio value={isReportForMyself.toString()}
-                               onChange={(value) => this.setState({isReportForMyself: value === "true"})}>
-                            <Radio.Item value={"true"}>для Me</Radio.Item>
-                            <Radio.Item value={"false"}>Выбор группы сотрудников</Radio.Item>
-                        </Radio>
+                        {
+                            isManagersWidget ? <Radio value={isReportForMyself.toString()}
+                                               onChange={(value) => this.setState({isReportForMyself: value === "true"})}>
+                                <Radio.Item value={"true"}>для Me</Radio.Item>
+                                <Radio.Item value={"false"}>Выбор группы сотрудников</Radio.Item>
+                            </Radio> : <div></div>
+                        }
+
                         {
                             !isReportForMyself
                                 ?
@@ -486,7 +494,7 @@ export default class ReportWidget extends Component {
                     <Table size="small" aria-label="simple table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>{"Full Name"}</TableCell>
+                                <TableCell>{"Сотрудник"}</TableCell>
                                 {reportData[0].periods.map(period => <TableCell
                                     key={`${period.label}`}>{`${period.label}`}</TableCell>)}
                             </TableRow>
@@ -508,7 +516,7 @@ export default class ReportWidget extends Component {
                                         </TableCell>)}
                                 </TableRow>
                             })}
-                            <TableRow><TableCell>{"Итого:"}</TableCell>{resultFactPlans.map(period => {
+                            <TableRow><TableCell><b>{"Итого:"}</b></TableCell>{resultFactPlans.map(period => {
                                 return <TableCell>
                                     <TableRow>
                                         <TableCell>{"План"}</TableCell><TableCell>{"Факт"}</TableCell>
